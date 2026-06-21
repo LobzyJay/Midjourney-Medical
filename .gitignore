@@ -59,3 +59,17 @@ announce*.m4a
 frames/
 contact_sheets/
 inspo_mov/
+
+# build info + root scratch (screenshots, plans) — not part of the app
+*.tsbuildinfo
+/*.png
+/PLAN_*.md
+
+# stray scratch (not part of the app)
+experiments/
+/*.jpeg
+/*.jpg
+hero-*.jpeg
+
+# local agent/editor config
+.claude/

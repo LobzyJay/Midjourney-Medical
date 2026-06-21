@@ -8,7 +8,7 @@ import {
   useInView,
 } from 'framer-motion'
 import { ParticleMorph, type MorphHandle } from '../three/ParticleMorph'
-import { ANATOMY_LABELS } from '../three/humanPoints'
+import { CAM, cameraZ } from '../three/figureFit'
 
 /** Budget point count + DPR to the device — ≤40k cap, lighter on small screens. */
 function useMorphBudget() {
@@ -16,9 +16,11 @@ function useMorphBudget() {
   useEffect(() => {
     const compute = () => {
       const w = window.innerWidth
-      if (w <= 600) setBudget({ count: 9000, dprMax: 1.5 })
-      else if (w <= 1024) setBudget({ count: 16000, dprMax: 1.75 })
-      else setBudget({ count: 24000, dprMax: 2 })
+      // dense enough that the real skeleton geometry (skull, ribs, sockets)
+      // reads as anatomy, not confetti. skeleton.bin holds 90k.
+      if (w <= 600) setBudget({ count: 28000, dprMax: 2 })
+      else if (w <= 1024) setBudget({ count: 52000, dprMax: 2 })
+      else setBudget({ count: 90000, dprMax: 2 })
     }
     compute()
     window.addEventListener('resize', compute)
@@ -33,15 +35,30 @@ const STAGES = [
   { key: 'THE WHOLE', aside: '…until you can finally see all of it.' },
 ] as const
 
-// label screen positions around the centered figure (x%, y%)
-const LABEL_POS: Record<string, [number, number]> = {
-  CRANIUM: [62, 14],
-  CLAVICLE: [66, 30],
-  STERNUM: [38, 36],
-  HUMERUS: [30, 46],
-  PELVIS: [60, 58],
-  FEMUR: [40, 70],
-  TIBIA: [62, 84],
+// Anatomy landmarks as 3D points in the figure frame (centered, ~4 tall, y-up),
+// calibrated to the body mesh. These are PROJECTED through the same static
+// camera as the canvas, so labels track their body part at ANY screen size /
+// aspect ratio (fixed screen-% would drift when the figure rescales).
+const LANDMARKS: { text: string; at: [number, number, number] }[] = [
+  { text: 'CRANIUM', at: [0, 1.92, 0.12] }, // skull
+  { text: 'CLAVICLE', at: [0.52, 1.34, 0.1] }, // collarbone
+  { text: 'STERNUM', at: [0, 0.98, 0.22] }, // breastbone
+  { text: 'HUMERUS', at: [-0.82, 1.28, 0.05] }, // upper arm (T-pose)
+  { text: 'PELVIS', at: [0.22, 0.0, 0.12] }, // hip
+  { text: 'FEMUR', at: [0.26, -0.78, 0.12] }, // thigh
+  { text: 'TIBIA', at: [-0.28, -1.55, 0.08] }, // shin
+]
+
+// camera config is shared with ParticleMorph via figureFit (CAM + cameraZ), so
+// labels track the figure even as the camera pulls back on portrait viewports.
+const TAN_HALF_FOV = Math.tan(((CAM.fov * Math.PI) / 180) / 2)
+
+/** project a figure-frame point to screen percentages for the given aspect (w/h) */
+function projectLandmark(p: [number, number, number], aspect: number) {
+  const depth = cameraZ(aspect) - p[2]
+  const ndcX = p[0] / (TAN_HALF_FOV * aspect * depth)
+  const ndcY = (p[1] - CAM.y) / (TAN_HALF_FOV * depth)
+  return { x: (ndcX * 0.5 + 0.5) * 100, y: (0.5 - ndcY * 0.5) * 100 }
 }
 
 /** Corner brackets — the tactical-HUD frame (Avengers grammar). */
@@ -63,7 +80,16 @@ export function BodyMorph() {
   const progress = useRef<MorphHandle>({ current: 0 }).current
   const reduce = useReducedMotion()
   const [stage, setStage] = useState(0)
+  const [aspect, setAspect] = useState(1.6)
   const { count, dprMax } = useMorphBudget()
+
+  // track viewport aspect so projected labels stay accurate on resize
+  useEffect(() => {
+    const update = () => setAspect(window.innerWidth / window.innerHeight)
+    update()
+    window.addEventListener('resize', update)
+    return () => window.removeEventListener('resize', update)
+  }, [])
   // park the GPU loop when the canvas is well off-screen
   const inView = useInView(stickyRef, { margin: '60% 0px 60% 0px' })
 
@@ -72,15 +98,24 @@ export function BodyMorph() {
     offset: ['start start', 'end end'],
   })
 
-  // map scroll → morph progress (0 cells · 0.5 skeleton · 1 body), with holds
+  // map scroll → morph progress (0 cells · 0.5 skeleton · 1 body). Piecewise with
+  // a deliberate HOLD on the skeleton: the figure forms, then FREEZES as the
+  // labelled skeleton for ~a fifth of the track before flowing into the body — so
+  // even a fast scroll lands and lingers on the skeleton instead of flying past.
   useMotionValueEvent(scrollYProgress, 'change', (p) => {
-    const m = Math.min(1, Math.max(0, (p - 0.08) / 0.78))
+    const t = Math.min(1, Math.max(0, (p - 0.06) / 0.88))
+    let m: number
+    if (t < 0.28) m = (t / 0.28) * 0.5 // cells → skeleton form
+    else if (t < 0.5) m = 0.5 // hold on the skeleton (dwell)
+    else m = 0.5 + ((t - 0.5) / 0.5) * 0.5 // skeleton → full body
     progress.current = m
     setStage(m < 0.34 ? 0 : m < 0.72 ? 1 : 2)
   })
 
-  // anatomical labels read during the skeleton window
-  const labelOpacity = useTransform(scrollYProgress, [0.32, 0.45, 0.66, 0.78], [0, 1, 1, 0])
+  // labels are the ARRIVAL beat — they fade in only AFTER the figure finishes
+  // turning to front (LivingRig reaches yaw 0 at m≈0.72 ⇒ p≈0.7). projectLandmark
+  // assumes no rotation, so showing them mid-turn floats the leaders off the body.
+  const labelOpacity = useTransform(scrollYProgress, [0.7, 0.78, 1], [0, 1, 1])
 
   if (reduce) {
     // graceful fallback — no scrubbed WebGL; the three states stated plainly
@@ -106,9 +141,9 @@ export function BodyMorph() {
   }
 
   return (
-    <section id="body" ref={trackRef} style={{ height: '360vh', position: 'relative' }}>
+    <section id="body" ref={trackRef} style={{ height: '460vh', position: 'relative' }}>
       <div ref={stickyRef} className="sticky top-0 h-[100dvh] w-full overflow-hidden">
-        {/* the morph canvas */}
+        {/* the morph canvas — on calm black, no atmosphere glow */}
         <div className="absolute inset-0">
           <ParticleMorph progress={progress} count={count} dprMax={dprMax} active={inView} />
         </div>
@@ -135,14 +170,19 @@ export function BodyMorph() {
 
         {/* anatomical labels with leader dots (skeleton window) */}
         <motion.div className="pointer-events-none absolute inset-0" style={{ opacity: labelOpacity }}>
-          {ANATOMY_LABELS.map((l) => {
-            const pos = LABEL_POS[l.text]
-            if (!pos) return null
+          {LANDMARKS.map((l) => {
+            const s = projectLandmark(l.at, aspect)
+            // left-side parts point their text outward (left), right-side outward (right)
+            const left = l.at[0] < 0
             return (
               <div
                 key={l.text}
-                className="absolute flex items-center gap-2"
-                style={{ left: `${pos[0]}%`, top: `${pos[1]}%` }}
+                className={`absolute flex items-center gap-2 ${left ? 'flex-row-reverse' : ''}`}
+                style={
+                  left
+                    ? { right: `${100 - s.x}%`, top: `${s.y}%`, transform: 'translateY(-50%)' }
+                    : { left: `${s.x}%`, top: `${s.y}%`, transform: 'translateY(-50%)' }
+                }
               >
                 <span className="h-1 w-1 rounded-full bg-cream/70" />
                 <span className="h-px w-6 bg-cream/25" />

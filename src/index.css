@@ -16,15 +16,16 @@
   /* Section "sauce" — warm↔cool temperature accents, used as low-opacity
      atmospheric glows only. RGB triplets so opacity is set at the call site. */
   --glow-warm: 235, 150, 64; /* amber — human / spa / close */
+  --glow-ember: 214, 67, 26; /* blood-orange — the thermal scan (body section) */
   --glow-cool: 96, 150, 178; /* steel cyan — data / machine read */
   --glow-violet: 124, 116, 190; /* cerebral — the idea */
   --glow-teal: 80, 168, 156; /* clinical — segmentation */
 
-  /* baseline grid unit + layout */
+  /* baseline grid unit + layout — generous MetaLab-style air */
   --baseline: 8px;
-  --gutter: 24px;
-  --margin: clamp(20px, 5vw, 80px);
-  --max: 1440px;
+  --gutter: 28px;
+  --margin: clamp(24px, 6vw, 120px);
+  --max: 1560px;
 
   /* motion — calm, weighted, never snappy */
   --ease-void: cubic-bezier(0.16, 1, 0.3, 1);
@@ -56,9 +57,10 @@ body {
   margin: 0;
   background: var(--void);
   color: var(--cream);
-  font-family: 'Archivo', ui-sans-serif, system-ui, sans-serif;
+  font-family: 'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif;
   font-weight: 400;
-  line-height: 1.5;
+  line-height: 1.55;
+  letter-spacing: -0.006em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -117,7 +119,7 @@ button {
    e.g.  MATTER · STRUCTURE · THE WHOLE
    ============================================================ */
 .label {
-  font-family: 'Archivo', ui-sans-serif, system-ui, sans-serif;
+  font-family: 'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif;
   font-weight: 500;
   font-size: 0.6875rem; /* 11px */
   letter-spacing: 0.18em;
@@ -127,11 +129,11 @@ button {
 
 /* authored serif gesture — the one human break per section */
 .authored {
-  font-family: 'Instrument Serif', ui-serif, Georgia, serif;
+  font-family: 'Newsreader', ui-serif, Georgia, serif;
   font-style: normal;
-  font-weight: 400;
-  line-height: 1.15;
-  letter-spacing: -0.01em;
+  font-weight: 300; /* slim display weight, PP-Eiko-like */
+  line-height: 1.1;
+  letter-spacing: -0.02em;
 }
 
 /* ============================================================

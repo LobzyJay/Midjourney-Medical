@@ -2,7 +2,7 @@ import { useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
 import { Container } from './Container'
-import { SectionGlow } from './SectionGlow'
+import { Mark } from './Mark'
 
 /**
  * S6 · JOIN (CTA) — emerge-from-black close. Cream hairline pill, authored
@@ -16,9 +16,7 @@ export function Join() {
     <section
       id="join"
       className="relative flex min-h-[100dvh] flex-col items-center justify-center text-center"
-      style={{ borderTop: '1px solid var(--hairline)' }}
     >
-      <SectionGlow rgb="var(--glow-warm)" at="50% 58%" size="70% 65%" opacity={0.11} />
       <Container className="relative z-10">
         <motion.div
           ref={ref}
@@ -27,9 +25,10 @@ export function Join() {
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
           className="flex flex-col items-center"
         >
+          <Mark className="mb-8 h-9 w-auto text-cream/80" />
           <p
-            className="authored max-w-[14ch]"
-            style={{ fontSize: 'clamp(2.25rem, 7vw, 5rem)', color: 'var(--cream)' }}
+            className="authored max-w-[12ch]"
+            style={{ fontSize: 'clamp(2rem, 6.2vw, 5.2rem)', color: 'var(--cream)' }}
           >
             We are all Midjourney.
           </p>

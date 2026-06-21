@@ -1,5 +1,7 @@
 import { PinnedClip } from '../anim/PinnedClip'
+import { Reveal } from '../anim/Reveal'
 import { Container, Grid } from './Container'
+import { asset } from '../lib/asset'
 
 /** Diegetic readout rows — clinical label + mono value. */
 const SPEC: { k: string; v: string }[] = [
@@ -17,11 +19,11 @@ const SPEC: { k: string; v: string }[] = [
 export function Machine() {
   return (
     <section id="machine" className="relative" style={{ borderTop: '1px solid var(--hairline)' }}>
-      <PinnedClip src="/clips/machine" className="h-[100dvh] w-full">
+      <PinnedClip src={asset('/clips/machine')} className="h-[100dvh] w-full">
         <Container className="relative z-10 flex h-full w-full items-center">
           <Grid className="w-full items-center">
             {/* heading — clinical, left */}
-            <div className="col-span-4 md:col-span-3 lg:col-span-6">
+            <Reveal className="col-span-4 md:col-span-3 lg:col-span-6">
               <p className="label">The Midjourney Scanner</p>
               <p
                 className="authored mt-4 max-w-[16ch]"
@@ -33,10 +35,13 @@ export function Machine() {
                 It starts by stepping into a shallow pool of golden light. The goal is for the
                 whole process to take no more than 60 seconds.
               </p>
-            </div>
+            </Reveal>
 
             {/* instrument-glass HUD card — right */}
-            <div className="col-span-4 mt-8 md:col-span-3 md:mt-0 lg:col-span-5 lg:col-start-8">
+            <Reveal
+              className="col-span-4 mt-8 md:col-span-3 md:mt-0 lg:col-span-5 lg:col-start-8"
+              delay={0.12}
+            >
               <div className="instrument-glass p-6 md:p-8">
                 <div className="mb-5 flex items-center justify-between">
                   <p className="label" style={{ color: 'var(--cream)' }}>
@@ -61,7 +66,7 @@ export function Machine() {
                   ))}
                 </dl>
               </div>
-            </div>
+            </Reveal>
           </Grid>
         </Container>
       </PinnedClip>

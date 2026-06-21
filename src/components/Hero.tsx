@@ -1,50 +1,189 @@
-import { motion, useReducedMotion } from 'framer-motion'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
+import {
+  motion,
+  useInView,
+  useReducedMotion,
+  useScroll,
+  useSpring,
+  useTransform,
+  type MotionValue,
+} from 'framer-motion'
 import { WordsPullUp } from '../anim/WordsPullUp'
 import { Container } from './Container'
+import { asset } from '../lib/asset'
+
+// Echo field pulls in r3f — lazy so it only loads if selected.
+const EchoField = lazy(() =>
+  import('../three/EchoField').then((m) => ({ default: m.EchoField })),
+)
+
+type Variant = 'studio' | 'echo'
+
+function initialVariant(): Variant {
+  if (typeof window === 'undefined') return 'echo'
+  // ECHO is the locked direction; ?hero=studio stays as a review escape hatch.
+  const q = new URLSearchParams(window.location.search).get('hero')
+  return q === 'studio' ? 'studio' : 'echo'
+}
 
 /**
- * S0 · VOID / TITLE — pure black, centered. The page begins from nothing.
- * Clinical wordmark rises in; one authored serif line beneath; a single
- * hairline and a faint scroll cue. Nothing else. (PRD §8 S0)
+ * Studio variant — the compute-rack control room (announce ~1:20) as a parallax
+ * still: a slow Ken-Burns push, a scroll drift, and a subtle mouse parallax give
+ * the photo depth. A directional scrim is weighted to the lower-left, where the
+ * type sits, so the monitor reads in open space instead of behind the headline.
+ */
+function HeroStudio({
+  scrollYProgress,
+  reduce,
+}: {
+  scrollYProgress: MotionValue<number>
+  reduce: boolean
+}) {
+  const mx = useSpring(0, { stiffness: 60, damping: 18, mass: 0.4 })
+  const my = useSpring(0, { stiffness: 60, damping: 18, mass: 0.4 })
+  const yScroll = useTransform(scrollYProgress, [0, 1], ['0%', '8%'])
+  const scaleScroll = useTransform(scrollYProgress, [0, 1], [1, 1.05])
+
+  useEffect(() => {
+    if (reduce) return
+    const onMove = (e: PointerEvent) => {
+      mx.set((e.clientX / window.innerWidth - 0.5) * -26)
+      my.set((e.clientY / window.innerHeight - 0.5) * -26)
+    }
+    window.addEventListener('pointermove', onMove)
+    return () => window.removeEventListener('pointermove', onMove)
+  }, [reduce, mx, my])
+
+  return (
+    <div className="absolute inset-0 overflow-hidden">
+      {/* scroll layer — nudged right (x) so the monitor sits clear of the
+          left-spine headline */}
+      <motion.div
+        className="absolute inset-[-12%]"
+        style={reduce ? { transform: 'translateX(7%)' } : { x: '7%', y: yScroll, scale: scaleScroll }}
+      >
+        {/* mouse layer — the looping control-room clip drifts with scroll + cursor */}
+        <motion.div className="h-full w-full" style={reduce ? undefined : { x: mx, y: my }}>
+          <video
+            className="h-full w-full object-cover"
+            style={{ objectPosition: 'center 42%' }}
+            autoPlay
+            muted
+            loop
+            playsInline
+            poster={asset('/clips/control.jpg')}
+          >
+            <source src={asset('/clips/control.webm')} type="video/webm" />
+            <source src={asset('/clips/control.mp4')} type="video/mp4" />
+          </video>
+        </motion.div>
+      </motion.div>
+
+      {/* directional scrim — darkest at the left spine, clears toward the monitor */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            'linear-gradient(to right, rgba(6,7,10,0.94), rgba(6,7,10,0.55) 36%, rgba(6,7,10,0.12) 70%, transparent)',
+        }}
+      />
+      <div
+        className="absolute inset-0"
+        style={{ background: 'linear-gradient(to top, rgba(6,7,10,0.6), rgba(6,7,10,0) 42%)' }}
+      />
+    </div>
+  )
+}
+
+/**
+ * S0 · VOID / TITLE — the opening. Echo (ambient bone-ring ripple field) is the
+ * locked direction; Studio (parallax control-room still) stays as a review
+ * escape hatch via ?hero=studio in the URL.
  */
 export function Hero() {
   const reduce = useReducedMotion()
+  // locked to ECHO; ?hero=studio is the only thing that flips this (review hatch).
+  const [variant] = useState<Variant>(initialVariant)
+  const sectionRef = useRef<HTMLElement>(null)
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ['start start', 'end start'],
+  })
+  // park the Echo WebGL loop once the hero scrolls away (it renders forever
+  // otherwise — a 60fps GPU drain below the fold). A small margin keeps it warm
+  // just off-screen so it's running before the hero is fully back in view.
+  const heroInView = useInView(sectionRef, { margin: '20% 0px 20% 0px' })
+
+  const isStudio = variant === 'studio'
 
   return (
     <section
       id="void"
-      className="relative flex min-h-[100dvh] flex-col items-center justify-center text-center"
+      ref={sectionRef}
+      className={`relative flex min-h-[100dvh] flex-col justify-center overflow-hidden ${
+        isStudio ? '' : 'items-center text-center'
+      }`}
     >
-      <Container>
-        {/* clinical wordmark — small, wide-tracked */}
-        <WordsPullUp
-          text="Midjourney Medical"
-          className="label"
-          // slightly larger than the 11px base for the title moment
-          // (kept clinical, not a display face)
-        />
+      {/* background variant */}
+      <div className="absolute inset-0 z-0">
+        {variant === 'studio' && <HeroStudio scrollYProgress={scrollYProgress} reduce={!!reduce} />}
+        {variant === 'echo' &&
+          (reduce ? (
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  'radial-gradient(60% 50% at 50% 45%, rgba(241,161,90,0.10), transparent 70%)',
+              }}
+            />
+          ) : (
+            <Suspense fallback={null}>
+              <EchoField active={heroInView} />
+            </Suspense>
+          ))}
+      </div>
 
-        {/* the one human break — authored serif */}
+      <Container className={`relative z-10 ${isStudio ? 'w-full text-left' : ''}`}>
+        <WordsPullUp text="Midjourney Medical" className="label" />
+
         <motion.p
-          className="authored mx-auto mt-6 max-w-[20ch]"
-          style={{ fontSize: 'clamp(1.75rem, 6vw, 3.75rem)', color: 'var(--cream)' }}
+          className={`authored mt-6 ${isStudio ? 'max-w-[15ch]' : 'max-w-[18ch] mx-auto'}`}
+          style={{
+            fontSize: isStudio
+              ? 'clamp(1.6rem, 3.4vw, 3.1rem)'
+              : 'clamp(1.75rem, 5.4vw, 4.4rem)',
+            color: 'var(--cream)',
+          }}
           initial={reduce ? false : { opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
         >
-          A little weird, a little crazy — but spectacular, and filled with hope.
+          {/* verbatim — Midjourney blogpost opening */}
+          Something a little weird, a little crazy — but also spectacular, and filled with hope.
         </motion.p>
 
-        {/* single hairline */}
         <div
-          className="mx-auto mt-10 h-px w-16"
+          className={`mt-10 h-px w-16 ${isStudio ? '' : 'mx-auto'}`}
           style={{ background: 'var(--hairline)' }}
         />
       </Container>
 
-      {/* faint scroll cue, bottom-center */}
+      {/* bottom fade — the Echo ripples dissolve into the void at the seam with
+          BodyMorph below. Non-interactive (pointer-events-none) so it never
+          blocks the Echo field's click ripples or the scroll cue. Sits above the
+          bg canvas (z-0) and below the content/cue (z-10). */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-[1]"
+        style={{
+          height: '28vh',
+          background: 'linear-gradient(to bottom, transparent, var(--void))',
+        }}
+      />
+
+      {/* scroll cue */}
       <motion.div
-        className="pointer-events-none absolute bottom-10 left-1/2 -translate-x-1/2"
+        className="pointer-events-none absolute bottom-10 left-1/2 z-10 -translate-x-1/2"
         initial={reduce ? false : { opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1.4, delay: 1.4 }}

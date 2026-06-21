@@ -20,7 +20,7 @@ export function Promise() {
             <p className="label">The Idea</p>
             <ScrollCharOpacity
               text="You want as much data as you can get about your health as quickly and as cheaply as possible."
-              className="authored mt-8 max-w-[20ch] text-[length:clamp(1.75rem,4.5vw,3.5rem)]"
+              className="authored mt-8 max-w-[20ch] text-[length:clamp(1.6rem,4.1vw,3.5rem)]"
             />
           </div>
         </Grid>

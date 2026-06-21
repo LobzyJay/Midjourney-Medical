@@ -1,6 +1,7 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useState } from 'react'
+import { motion, useReducedMotion } from 'framer-motion'
+import { Loader } from './components/Loader'
 import { Nav } from './components/Nav'
-import { SoundToggle } from './components/SoundToggle'
 import { GridOverlay } from './components/GridOverlay'
 import { useDebugGrid } from './lib/useDebugGrid'
 
@@ -27,13 +28,24 @@ const BodyMorph = lazy(() =>
  */
 export default function App() {
   const showGrid = useDebugGrid()
+  const reduce = useReducedMotion()
+  const [revealed, setRevealed] = useState(false)
 
   return (
     <>
+      <Loader onReveal={() => setRevealed(true)} />
       <div className="void-breath" aria-hidden />
       <Nav />
 
-      <main className="relative z-10">
+      {/* the page settles in as the loader lifts away — a subtle push-in
+          crossfade that meets the overlay's blur/scale exit (immersive, simple) */}
+      <motion.main
+        className="relative z-10"
+        initial={reduce ? false : { opacity: 0, scale: 1.03 }}
+        animate={revealed || reduce ? { opacity: 1, scale: 1 } : undefined}
+        transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
+        style={{ transformOrigin: '50% 0%' }}
+      >
         <Hero />
         <Suspense fallback={<section id="body" className="min-h-[100dvh]" />}>
           <BodyMorph />
@@ -43,11 +55,23 @@ export default function App() {
         <Machine />
         <LookingCloser />
         <WhatItSees />
-        <Spa />
-        <Join />
-      </main>
 
-      <SoundToggle />
+        {/* Spa + Join share ONE warm gradient rising from the footer, so they
+            read as a single continuous ground rather than two glows + a seam. */}
+        <div className="relative">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 z-0"
+            style={{
+              background:
+                'radial-gradient(135% 90% at 50% 100%, rgba(235,150,64,0.16), rgba(235,150,64,0.05) 38%, transparent 70%)',
+            }}
+          />
+          <Spa />
+          <Join />
+        </div>
+      </motion.main>
+
       <div className="noise" aria-hidden />
       {showGrid && <GridOverlay />}
     </>

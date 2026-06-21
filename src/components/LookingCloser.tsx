@@ -1,17 +1,27 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, useInView, useReducedMotion, useScroll, useTransform } from 'framer-motion'
 import { Container, Grid } from './Container'
-import { SectionGlow } from './SectionGlow'
+import { asset } from '../lib/asset'
 
 /**
- * S3a · LOOKING CLOSER — the reconstructed body volume, swept slice by slice.
- * The full (uncropped) video starts large and scales DOWN as you scroll, landing
- * small and centered by the halfway point; the editorial copy fades in around it.
+ * S3a · LOOKING CLOSER — a LIGHT section that breaks the void (premium, airy,
+ * a deliberate exhale mid-scroll). The reconstructed body volume scales down as
+ * you scroll; the grayscale scan is inverted + multiplied so it reads as dark
+ * line-art directly on the light ground (no black box).
  */
 const VOLUMES = [
   { key: 'body_slice', label: 'Torso volume' },
   { key: 'leg_slice', label: 'Leg volume' },
 ] as const
+
+// light-theme palette (this section only). The section ground (cream) is a
+// different tone from the video card (near-white = the inverted void), so the
+// scan reads as a framed panel, not a cutout.
+const BG = '#E8E4D8' // section ground
+const CARD = '#FAF6F5' // video card ground (= inverted video background)
+const INK = '#15171B'
+const INK_DIM = 'rgba(21, 23, 27, 0.6)'
+const LINE = 'rgba(21, 23, 27, 0.14)'
 
 export function LookingCloser() {
   const trackRef = useRef<HTMLDivElement>(null)
@@ -20,12 +30,21 @@ export function LookingCloser() {
   const reduce = useReducedMotion()
   const inView = useInView(stickyRef, { margin: '0px 0px -10% 0px' })
   const [vol, setVol] = useState(0)
+  // below lg the sticky-scrub overlay collides the shrunk video with the stacked
+  // text — fall back to the simple stacked layout (same as reduced-motion).
+  const [compact, setCompact] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 1023px)')
+    const sync = () => setCompact(mq.matches)
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [])
 
   const { scrollYProgress } = useScroll({
     target: trackRef,
     offset: ['start start', 'end end'],
   })
-  // full frame → small centered over the first half of the scroll, then holds
   const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.34])
   const textOpacity = useTransform(scrollYProgress, [0.4, 0.62], [0, 1])
 
@@ -36,18 +55,22 @@ export function LookingCloser() {
     else v.pause()
   }, [inView, vol])
 
+  // the video lives inside a contained CARD (its own near-white ground, set off
+  // from the cream section) and is oversized so object-cover crops both sides —
+  // a framed scan panel, not an edge-to-edge cutout.
   const video = (
     <video
       ref={videoRef}
       key={VOLUMES[vol].key}
-      className="max-h-[88vh] w-full object-contain opacity-95"
+      className="absolute h-[118%] w-[118%] max-w-none object-cover"
+      style={{ left: '-9%', top: '-9%', filter: 'invert(1)', objectPosition: 'center' }}
       muted
       loop
       playsInline
       preload="metadata"
-      poster={`/scan/${VOLUMES[vol].key}.jpg`}
+      poster={asset(`/scan/${VOLUMES[vol].key}.jpg`)}
     >
-      <source src={`/scan/${VOLUMES[vol].key}.webm`} type="video/webm" />
+      <source src={asset(`/scan/${VOLUMES[vol].key}.webm`)} type="video/webm" />
     </video>
   )
 
@@ -55,14 +78,16 @@ export function LookingCloser() {
     <Container className="w-full">
       <Grid className="items-center gap-y-10">
         <div className="col-span-4 md:col-span-3 lg:col-span-4">
-          <p className="label">Looking Closer</p>
+          <p className="label" style={{ color: INK_DIM }}>
+            Looking Closer
+          </p>
           <h2
             className="authored mt-4 max-w-[12ch]"
-            style={{ fontSize: 'clamp(1.75rem, 4vw, 3rem)', color: 'var(--cream)' }}
+            style={{ fontSize: 'clamp(1.75rem, 4vw, 3rem)', color: INK }}
           >
-            A choir and an audience, half a million strong.
+            It listens the way a dolphin sees.
           </h2>
-          <p className="mt-6 max-w-[34ch] font-mono text-[12px] leading-relaxed text-cream-dim md:text-[13px]">
+          <p className="mt-6 max-w-[34ch] font-mono text-[12px] leading-relaxed md:text-[13px]" style={{ color: INK_DIM }}>
             You pass through a ring of half a million tiny squares — each the size of a grain of
             sand, each a speaker and a microphone — sending ultrasonic waves and recording the
             ripples back, millions of times a second.
@@ -74,18 +99,20 @@ export function LookingCloser() {
             {[
               ['Elements', '≈ 500,000'],
               ['Output', 'terabytes / sec'],
-              ['1 sec of scan', '= 500 hrs of HD video'],
+              ['Compute', '≈ two petaflops'],
               ['Descent', '5 cm / sec'],
             ].map(([k, v], i) => (
               <div
                 key={k}
                 className="flex items-baseline justify-between gap-4 py-3"
-                style={{ borderTop: i === 0 ? 'none' : '1px solid var(--hairline)' }}
+                style={{ borderTop: i === 0 ? 'none' : `1px solid ${LINE}` }}
               >
-                <dt className="label" style={{ letterSpacing: '0.14em' }}>
+                <dt className="label" style={{ letterSpacing: '0.14em', color: INK_DIM }}>
                   {k}
                 </dt>
-                <dd className="text-right text-cream">{v}</dd>
+                <dd className="text-right" style={{ color: INK }}>
+                  {v}
+                </dd>
               </div>
             ))}
           </dl>
@@ -98,11 +125,12 @@ export function LookingCloser() {
             key={vd.key}
             type="button"
             onClick={() => setVol(i)}
-            className="label transition-opacity duration-300 ease-out"
+            className="label transition-[opacity,color,transform] duration-200 ease-out
+                       active:scale-95 [@media(hover:hover)]:hover:opacity-100"
             style={{
-              opacity: i === vol ? 1 : 0.4,
-              color: i === vol ? 'var(--cream)' : undefined,
-              borderBottom: i === vol ? '1px solid var(--cream)' : '1px solid transparent',
+              color: i === vol ? INK : INK_DIM,
+              opacity: i === vol ? 1 : 0.7,
+              borderBottom: i === vol ? `1px solid ${INK}` : '1px solid transparent',
               paddingBottom: 4,
             }}
           >
@@ -113,17 +141,20 @@ export function LookingCloser() {
     </Container>
   )
 
-  // reduced motion: no scrub — show a contained video + copy, static
-  if (reduce) {
+  if (reduce || compact) {
     return (
       <section
         id="closer"
         ref={stickyRef}
         className="relative flex min-h-[100dvh] flex-col items-center justify-center gap-10 py-24"
-        style={{ borderTop: '1px solid var(--hairline)' }}
+        style={{ background: BG, color: INK }}
       >
-        <SectionGlow rgb="var(--glow-cool)" at="50% 48%" size="70% 80%" opacity={0.14} z={1} />
-        <div className="mx-auto w-[min(46vw,460px)]">{video}</div>
+        <div
+          className="relative mx-auto aspect-video w-[86vw] overflow-hidden rounded-2xl md:w-[min(60vw,560px)]"
+          style={{ background: CARD }}
+        >
+          {video}
+        </div>
         <div className="relative z-10 w-full">{copy}</div>
       </section>
     )
@@ -133,21 +164,22 @@ export function LookingCloser() {
     <section
       id="closer"
       ref={trackRef}
-      style={{ height: '220vh', borderTop: '1px solid var(--hairline)' }}
+      style={{ height: '220vh', background: BG, color: INK }}
       className="relative"
     >
       <div ref={stickyRef} className="sticky top-0 flex h-[100dvh] items-center overflow-hidden">
-        <SectionGlow rgb="var(--glow-cool)" at="50% 48%" size="70% 80%" opacity={0.14} z={1} />
-
-        {/* the full video frame, scaling down to centered-small */}
         <motion.div
           style={{ scale }}
           className="pointer-events-none absolute inset-0 z-[2] flex items-center justify-center"
         >
-          {video}
+          <div
+            className="relative aspect-[16/9] w-[86vw] max-w-[1200px] overflow-hidden rounded-[20px] shadow-[0_30px_80px_-30px_rgba(21,23,27,0.25)]"
+            style={{ background: CARD }}
+          >
+            {video}
+          </div>
         </motion.div>
 
-        {/* editorial copy fades in around the shrunken frame */}
         <motion.div style={{ opacity: textOpacity }} className="relative z-10 w-full">
           {copy}
         </motion.div>

@@ -12,11 +12,11 @@ export default {
         // NOTE: gold is never a CSS value — it only ever comes from footage/imagery.
       },
       fontFamily: {
-        // Authored voice (warm) vs clinical voice (cold).
-        serif: ['"Instrument Serif"', 'ui-serif', 'Georgia', 'serif'],
-        // Swap point: replace 'Archivo' with '"Suisse Int\'l"' if licensed.
-        grotesque: ['Archivo', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+        // Authored voice (editorial serif) vs clinical voice (grotesque).
+        // MetaLab-inspired: Newsreader + Hanken Grotesk (≈ Basis Grotesque Pro).
+        serif: ['Newsreader', 'ui-serif', 'Georgia', 'serif'],
+        grotesque: ['"Hanken Grotesk"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        mono: ['"Spline Sans Mono"', 'ui-monospace', 'SFMono-Regular', 'monospace'],
       },
       letterSpacing: {
         label: '0.18em', // wide-tracked uppercase labels/tags

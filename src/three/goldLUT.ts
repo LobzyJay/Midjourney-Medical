@@ -1,17 +1,19 @@
 import { Color, DataTexture, LinearFilter, RGBAFormat, SRGBColorSpace } from 'three'
 
 /**
- * The MJ light ramp: dark ember → gold → warm white. Single hue.
- * This is the only color in the build — particles emit it. (PRD §6.1, §13)
- * Replaces nodefield's cool spectrum LUT.
+ * The MJ thermal ramp: near-black maroon → blood → blood-orange → hot orange →
+ * amber → hot white. A radiological/CT-scan heat map — cold tissue is deep red,
+ * hot bone reads white. This is the only color in the build; particles emit it
+ * and the figure glows like a body on a thermal scanner. (PRD §6.1, §13)
  */
 const STOPS: { t: number; c: string }[] = [
-  { t: 0.0, c: '#140a02' }, // near-black warm
-  { t: 0.32, c: '#5e2f08' }, // deep amber
-  { t: 0.55, c: '#b87020' }, // burnt gold
-  { t: 0.74, c: '#f0a23c' }, // gold
-  { t: 0.9, c: '#ffd27a' }, // hot gold
-  { t: 1.0, c: '#fff4e2' }, // warm white
+  { t: 0.0, c: '#0a0204' }, // near-black maroon (deep tissue / void)
+  { t: 0.22, c: '#3d0a08' }, // dried blood
+  { t: 0.42, c: '#8c1d0a' }, // dark red-orange
+  { t: 0.6, c: '#d6431a' }, // blood orange
+  { t: 0.76, c: '#ff7a1e' }, // hot orange
+  { t: 0.9, c: '#ffb454' }, // amber
+  { t: 1.0, c: '#fff0d6' }, // white-hot (bone)
 ]
 
 const _a = new Color()
