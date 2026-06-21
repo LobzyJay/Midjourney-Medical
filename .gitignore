@@ -1,0 +1,61 @@
+# dependencies
+node_modules
+.pnp
+.pnp.js
+
+# build
+dist
+dist-ssr
+*.local
+
+# editor
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+
+# logs
+logs
+*.log
+npm-debug.log*
+
+# env
+.env
+.env.*
+!.env.example
+
+# scratch / reference clones
+.scratch
+.scratch_dev.log
+nodefield-ref
+.playwright-mcp
+phase*.png
+
+# build/QA review screenshots (scratch)
+s0-*.png
+s1-*.png
+s1a-*.png
+s3-*.png
+s4-*.png
+s6-*.png
+m-morph.png
+m-machine.png
+final-*.png
+new-*.png
+morph-fallback.png
+skel-*.png
+lazy-morph.png
+promise-fixed.png
+glow-*.png
+neural-*.png
+closer-*.png
+skel-check.png
+morph-skeleton.png
+
+# raw source media — reference only, not needed by the build (keeps the
+# iteration repo lean; the cut clips in public/ are what the site uses)
+announce*.mp4
+announce*.m4a
+frames/
+contact_sheets/
+inspo_mov/

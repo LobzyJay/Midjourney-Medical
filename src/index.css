@@ -1,0 +1,232 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   MIDJOURNEY MEDICAL — design tokens
+   Black is the subject. The only color is the gold the footage
+   emits. ~80% void · ~15% cream type · ~5% emitted gold.
+   ============================================================ */
+:root {
+  --void: #06070a;
+  --cream: #e7e3d4;
+  --cream-dim: rgba(231, 227, 212, 0.6);
+  --hairline: rgba(231, 227, 212, 0.1);
+
+  /* Section "sauce" — warm↔cool temperature accents, used as low-opacity
+     atmospheric glows only. RGB triplets so opacity is set at the call site. */
+  --glow-warm: 235, 150, 64; /* amber — human / spa / close */
+  --glow-cool: 96, 150, 178; /* steel cyan — data / machine read */
+  --glow-violet: 124, 116, 190; /* cerebral — the idea */
+  --glow-teal: 80, 168, 156; /* clinical — segmentation */
+
+  /* baseline grid unit + layout */
+  --baseline: 8px;
+  --gutter: 24px;
+  --margin: clamp(20px, 5vw, 80px);
+  --max: 1440px;
+
+  /* motion — calm, weighted, never snappy */
+  --ease-void: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-slow: 1000ms;
+  --dur-mid: 700ms;
+
+  color-scheme: dark;
+}
+
+/* ---------- base reset ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--void);
+  color: var(--cream);
+  font-family: 'Archivo', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 400;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: rgba(231, 227, 212, 0.18);
+  color: var(--cream);
+}
+
+img,
+video,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* hairline focus — visible but quiet */
+:focus-visible {
+  outline: 1px solid var(--cream-dim);
+  outline-offset: 3px;
+}
+
+/* ---------- thin cream scrollbar ---------- */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(231, 227, 212, 0.12);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(231, 227, 212, 0.22);
+}
+
+/* ============================================================
+   Swiss labels — wide-tracked uppercase clinical grotesque
+   e.g.  MATTER · STRUCTURE · THE WHOLE
+   ============================================================ */
+.label {
+  font-family: 'Archivo', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 500;
+  font-size: 0.6875rem; /* 11px */
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--cream-dim);
+}
+
+/* authored serif gesture — the one human break per section */
+.authored {
+  font-family: 'Instrument Serif', ui-serif, Georgia, serif;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+/* ============================================================
+   Instrument glass — diegetic only (machine / data panels).
+   Darker, void-friendly. Never decorative.  (PRD §6.3)
+   ============================================================ */
+.instrument-glass {
+  background: rgba(255, 255, 255, 0.015);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.06);
+  border-radius: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+.instrument-glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.25),
+    rgba(255, 255, 255, 0) 40%,
+    rgba(255, 255, 255, 0) 60%,
+    rgba(255, 255, 255, 0.25)
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* ============================================================
+   Film grain / noise — low-opacity texture over the void.
+   Apply with <div class="noise" /> as a fixed overlay.
+   ============================================================ */
+.noise {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  opacity: 0.035;
+  mix-blend-mode: screen;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* a faint radial breath of light from below — pure void elsewhere */
+.void-breath {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    120% 80% at 50% 120%,
+    rgba(231, 227, 212, 0.04),
+    transparent 60%
+  );
+}
+
+/* ============================================================
+   Swiss debug grid overlay — toggled in dev (?grid or "g")
+   ============================================================ */
+.grid-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 12), 1fr);
+  gap: var(--gutter);
+  padding-inline: var(--margin);
+  max-width: var(--max);
+  margin-inline: auto;
+}
+.grid-overlay span {
+  background: rgba(231, 120, 80, 0.06);
+  border-left: 1px solid rgba(231, 120, 80, 0.15);
+  border-right: 1px solid rgba(231, 120, 80, 0.15);
+}
+
+/* ============================================================
+   Reduced motion — videos still show; scrubbing/scaling falls
+   back to static + simple fades; morph → crossfading stills.
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
