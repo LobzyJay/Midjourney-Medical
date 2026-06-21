@@ -109,7 +109,7 @@ function MorphPoints({
       uLUT: { value: lut },
       uMorph: { value: 0 },
       uTime: { value: 0 },
-      uLineOpacity: { value: 0.5 },
+      uLineOpacity: { value: 0.08 }, // faint connective trace inside the skin
     }),
     [lut],
   )
@@ -140,8 +140,8 @@ function MorphPoints({
     () => ({
       uLUT: { value: lut },
       uMorph: { value: 0 },
-      uDotSize: { value: 0.052 },
-      uEmission: { value: 1.2 },
+      uDotSize: { value: 0.044 },
+      uEmission: { value: 1.25 },
       uTime: { value: 0 },
       uCamDist: { value: 6 },
       uFogR: { value: 2.6 },

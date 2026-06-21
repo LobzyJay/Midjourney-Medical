@@ -74,8 +74,8 @@ export const MORPH_FRAG = /* glsl */ `
   void main() {
     // round dot — sharp edge + tight core for a crisp pinprick, minimal halo
     float d = length(vUv);
-    float soft = smoothstep(0.5, 0.28, d); // hard-ish circular edge (was a wide blur)
-    float core = smoothstep(0.26, 0.0, d);
+    float soft = smoothstep(0.46, 0.33, d); // hard circular edge (crisp, no blur)
+    float core = smoothstep(0.2, 0.0, d);
 
     // gold ramp; formed particles ride brighter up the ramp
     float t = clamp(vT * 0.7 + vForm * 0.4, 0.0, 1.0);
@@ -87,16 +87,11 @@ export const MORPH_FRAG = /* glsl */ `
     float df = clamp((far - vViewDepth) / max(0.001, far - near), 0.0, 1.0);
     df *= df;
 
-    // as the body forms, the dense fill condenses to the neural-net nodes:
-    // non-node particles fade away, node particles stay bright. Earlier stages
-    // (cells/skeleton) keep every point.
-    float bodyMix = smoothstep(1.3, 1.9, vSeg);
-    float nonNode = mix(1.0, 0.06, bodyMix);   // fill dissolves at the body
-    float pointFade = mix(nonNode, 1.0, vNode); // nodes survive
-
+    // the final form is a full skinned figure — every surface point stays,
+    // reading as a dense clay/skin body rather than a sparse lattice
     float emis = uEmission * (0.5 + 0.55 * vForm);
-    vec3 color = base * emis * (soft * 0.5 + core * 1.0) * df * pointFade;
-    float alpha = soft * df * (0.55 + 0.45 * vForm) * pointFade;
+    vec3 color = base * emis * (soft * 0.5 + core * 1.0) * df;
+    float alpha = soft * df * (0.55 + 0.45 * vForm);
     if (alpha < 0.004) discard;
     gl_FragColor = vec4(color, alpha);
   }

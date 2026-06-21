@@ -10,10 +10,10 @@ export function Effects({ strength = 1 }: { strength?: number }) {
     <EffectComposer multisampling={8}>
       <Bloom
         mipmapBlur
-        intensity={0.3 * strength}
-        luminanceThreshold={0.62}
-        luminanceSmoothing={0.2}
-        radius={0.4}
+        intensity={0.16 * strength}
+        luminanceThreshold={0.72}
+        luminanceSmoothing={0.15}
+        radius={0.22}
       />
       <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
       <Noise blendFunction={BlendFunction.OVERLAY} opacity={0.1} premultiply />
