@@ -7,22 +7,6 @@ build by **Layout Studio**, designed to prove immersive-experience capability.
 > Concept and pastiche, made for design iteration — not affiliated with or
 > endorsed by Midjourney. Copy is drawn from the public Medical announcement.
 
-## The idea
-
-**Black is the subject.** The whole page is one long scroll through the void;
-the only colour is the warm thermal light the imagery emits. Scroll is the
-projector — motion is driven by scroll position, calm and weighted.
-
-The centrepiece is a scroll-scrubbed WebGL morph: a cloud of particles assembles
-into a translucent human figure that holds as a labelled anatomy diagram, then
-comes fully to life. Typography runs two voices — an authored serif for the
-human lines, a clinical grotesque set the Swiss way for everything else.
-
-### Section flow
-
-`Void / Hero → Body morph → Descent ("as powerful as an MRI") → Promise →
-Machine → Looking Closer → What It Sees → Spa → Join`
-
 ## Tech
 
 - **React 18 + Vite + TypeScript**
