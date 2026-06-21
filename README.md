@@ -2,7 +2,7 @@
 
 An immersive, single-page concept site for **Midjourney Medical** — the 60-second
 full-body *Ultrasonic CT* scanner and the Midjourney Spa. A spec / portfolio
-build by **Layout Studio**, designed to prove immersive-experience capability.
+build by **Adewale Aloba**, designed to prove immersive-experience capability.
 
 > Concept and pastiche, made for design iteration — not affiliated with or
 > endorsed by Midjourney. Copy is drawn from the public Medical announcement.
