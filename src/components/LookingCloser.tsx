@@ -118,27 +118,31 @@ export function LookingCloser() {
           </dl>
         </div>
       </Grid>
-
-      <div className="mt-12 flex items-center gap-3">
-        {VOLUMES.map((vd, i) => (
-          <button
-            key={vd.key}
-            type="button"
-            onClick={() => setVol(i)}
-            className="label transition-[opacity,color,transform] duration-200 ease-out
-                       active:scale-95 [@media(hover:hover)]:hover:opacity-100"
-            style={{
-              color: i === vol ? INK : INK_DIM,
-              opacity: i === vol ? 1 : 0.7,
-              borderBottom: i === vol ? `1px solid ${INK}` : '1px solid transparent',
-              paddingBottom: 4,
-            }}
-          >
-            {vd.label}
-          </button>
-        ))}
-      </div>
     </Container>
+  )
+
+  // volume tabs — extracted so they can sit directly under the visual on the
+  // compact (mobile/tablet) layout instead of buried below the copy.
+  const volTabs = (
+    <div className="flex items-center gap-3">
+      {VOLUMES.map((vd, i) => (
+        <button
+          key={vd.key}
+          type="button"
+          onClick={() => setVol(i)}
+          className="label transition-[opacity,color,transform] duration-200 ease-out
+                     active:scale-95 [@media(hover:hover)]:hover:opacity-100"
+          style={{
+            color: i === vol ? INK : INK_DIM,
+            opacity: i === vol ? 1 : 0.7,
+            borderBottom: i === vol ? `1px solid ${INK}` : '1px solid transparent',
+            paddingBottom: 4,
+          }}
+        >
+          {vd.label}
+        </button>
+      ))}
+    </div>
   )
 
   if (reduce || compact) {
@@ -155,6 +159,8 @@ export function LookingCloser() {
         >
           {video}
         </div>
+        {/* tabs directly under the visual on mobile/tablet */}
+        {volTabs}
         <div className="relative z-10 w-full">{copy}</div>
       </section>
     )
@@ -182,6 +188,9 @@ export function LookingCloser() {
 
         <motion.div style={{ opacity: textOpacity }} className="relative z-10 w-full">
           {copy}
+          <Container className="w-full">
+            <div className="mt-10">{volTabs}</div>
+          </Container>
         </motion.div>
       </div>
     </section>
