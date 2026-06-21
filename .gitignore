@@ -73,3 +73,7 @@ hero-*.jpeg
 
 # local agent/editor config
 .claude/
+
+# tsc -b artifacts for the node config (source of truth is vite.config.ts)
+vite.config.js
+vite.config.d.ts
