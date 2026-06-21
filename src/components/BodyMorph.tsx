@@ -42,7 +42,7 @@ const STAGES = [
 const LANDMARKS: { text: string; at: [number, number, number] }[] = [
   { text: 'CRANIUM', at: [0, 1.92, 0.12] }, // skull
   { text: 'CLAVICLE', at: [0.52, 1.34, 0.1] }, // collarbone
-  { text: 'STERNUM', at: [0, 0.98, 0.22] }, // breastbone
+  // (sternum omitted — a centerline landmark's outward leader lands on the body)
   { text: 'HUMERUS', at: [-0.82, 1.28, 0.05] }, // upper arm (T-pose)
   { text: 'PELVIS', at: [0.22, 0.0, 0.12] }, // hip
   { text: 'FEMUR', at: [0.26, -0.78, 0.12] }, // thigh
@@ -150,8 +150,9 @@ export function BodyMorph() {
 
         <Brackets />
 
-        {/* stage label — top-left, clinical */}
-        <div className="pointer-events-none absolute left-6 top-6 md:left-12 md:top-12">
+        {/* stage label — top-left, clinical. Sits below the fixed nav wordmark
+            (~58px tall) so the two don't overlap. */}
+        <div className="pointer-events-none absolute left-6 top-20 md:left-12 md:top-24">
           <p className="label">The Body</p>
           <p
             className="label mt-2"
