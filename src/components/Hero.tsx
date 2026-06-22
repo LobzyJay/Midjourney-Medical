@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useRef, useState } from 'react'
+import { Fragment, lazy, Suspense, useEffect, useRef, useState } from 'react'
 import {
   motion,
   useInView,
@@ -95,6 +95,9 @@ function HeroStudio({
   )
 }
 
+const HEADLINE =
+  'Something a little weird, a little crazy — but also spectacular, and filled with hope.'
+
 /**
  * S0 · VOID / TITLE — the opening. Echo (ambient bone-ring ripple field) is the
  * locked direction; Studio (parallax control-room still) stays as a review
@@ -159,9 +162,10 @@ export function Hero({ start = true }: { start?: boolean }) {
       <Container className={`relative z-10 ${isStudio ? 'w-full text-left' : ''}`}>
         <WordsPullUp text="Midjourney Medical" className="label" start={go} delay={0.2} />
 
-        {/* headline — a cinematic blur-up: rises and resolves from a soft blur as
-            it scales to full, so it reads as forming out of the void. */}
-        <motion.p
+        {/* headline — animates in WORD BY WORD (rise + fade, staggered) so the
+            lines fill into the page instead of jumping in as a block. Verbatim,
+            Midjourney blogpost opening. */}
+        <p
           className={`authored mt-6 ${isStudio ? 'max-w-[15ch]' : 'max-w-[18ch] mx-auto'}`}
           style={{
             fontSize: isStudio
@@ -169,13 +173,22 @@ export function Hero({ start = true }: { start?: boolean }) {
               : 'clamp(1.75rem, 5.4vw, 4.4rem)',
             color: 'var(--cream)',
           }}
-          initial={reduce ? false : { opacity: 0, y: 28, scale: 0.97, filter: 'blur(14px)' }}
-          animate={go ? { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' } : undefined}
-          transition={{ duration: 1.3, delay: 0.55, ease: EASE }}
+          aria-label={HEADLINE}
         >
-          {/* verbatim — Midjourney blogpost opening */}
-          Something a little weird, a little crazy — but also spectacular, and filled with hope.
-        </motion.p>
+          {HEADLINE.split(' ').map((word, i) => (
+            <Fragment key={i}>
+              <motion.span
+                aria-hidden
+                className="inline-block"
+                initial={reduce ? false : { opacity: 0, y: '0.45em' }}
+                animate={go ? { opacity: 1, y: 0 } : undefined}
+                transition={{ duration: 0.8, delay: 0.45 + i * 0.045, ease: EASE }}
+              >
+                {word}
+              </motion.span>{' '}
+            </Fragment>
+          ))}
+        </p>
 
         {/* hairline — draws out from the centre after the headline settles */}
         <motion.div
