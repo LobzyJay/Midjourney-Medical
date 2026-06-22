@@ -1,5 +1,6 @@
 import { lazy, Suspense, useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
+import { Analytics } from '@vercel/analytics/react'
 import { Loader } from './components/Loader'
 import { Nav } from './components/Nav'
 import { GridOverlay } from './components/GridOverlay'
@@ -74,6 +75,7 @@ export default function App() {
 
       <div className="noise" aria-hidden />
       {showGrid && <GridOverlay />}
+      <Analytics />
     </>
   )
 }
