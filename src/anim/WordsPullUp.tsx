@@ -10,16 +10,21 @@ export function WordsPullUp({
   className = '',
   stagger = 0.08,
   delay = 0,
+  start = true,
 }: {
   text: string
   className?: string
   stagger?: number
   delay?: number
+  /** external gate — animate only once this is true AND the element is in view
+   * (used by the hero so the intro waits for the loader to lift). */
+  start?: boolean
 }) {
   const ref = useRef<HTMLSpanElement>(null)
   const inView = useInView(ref, { once: true, margin: '0px 0px -10% 0px' })
   const reduce = useReducedMotion()
   const words = text.split(' ')
+  const go = inView && start
 
   return (
     <span ref={ref} className={`inline-block ${className}`} aria-label={text}>
@@ -28,7 +33,7 @@ export function WordsPullUp({
           <motion.span
             className="inline-block"
             initial={reduce ? { y: 0, opacity: 1 } : { y: 20, opacity: 0 }}
-            animate={inView ? { y: 0, opacity: 1 } : undefined}
+            animate={go ? { y: 0, opacity: 1 } : undefined}
             transition={{
               duration: 0.7,
               delay: delay + i * stagger,

@@ -46,7 +46,7 @@ export default function App() {
         transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
         style={{ transformOrigin: '50% 0%' }}
       >
-        <Hero />
+        <Hero start={revealed || !!reduce} />
         <Suspense fallback={<section id="body" className="min-h-[100dvh]" />}>
           <BodyMorph />
         </Suspense>

@@ -100,10 +100,14 @@ function HeroStudio({
  * locked direction; Studio (parallax control-room still) stays as a review
  * escape hatch via ?hero=studio in the URL.
  */
-export function Hero() {
+export function Hero({ start = true }: { start?: boolean }) {
   const reduce = useReducedMotion()
   // locked to ECHO; ?hero=studio is the only thing that flips this (review hatch).
   const [variant] = useState<Variant>(initialVariant)
+  // the intro plays once the loader lifts (start) so the epic entrance happens
+  // while the visitor is actually looking at it — never hidden behind the loader.
+  const go = start || !!reduce
+  const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1]
   const sectionRef = useRef<HTMLElement>(null)
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -124,28 +128,39 @@ export function Hero() {
         isStudio ? '' : 'items-center text-center'
       }`}
     >
-      {/* background variant */}
+      {/* background variant — the Echo field BLOOMS in (light emerging from the
+          void) once the intro starts, rather than just appearing. */}
       <div className="absolute inset-0 z-0">
         {variant === 'studio' && <HeroStudio scrollYProgress={scrollYProgress} reduce={!!reduce} />}
-        {variant === 'echo' &&
-          (reduce ? (
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  'radial-gradient(60% 50% at 50% 45%, rgba(241,161,90,0.10), transparent 70%)',
-              }}
-            />
-          ) : (
-            <Suspense fallback={null}>
-              <EchoField active={heroInView} />
-            </Suspense>
-          ))}
+        {variant === 'echo' && (
+          <motion.div
+            className="absolute inset-0"
+            initial={reduce ? false : { opacity: 0, scale: 1.08 }}
+            animate={go ? { opacity: 1, scale: 1 } : undefined}
+            transition={{ duration: 2.4, ease: EASE }}
+          >
+            {reduce ? (
+              <div
+                className="absolute inset-0"
+                style={{
+                  background:
+                    'radial-gradient(60% 50% at 50% 45%, rgba(241,161,90,0.10), transparent 70%)',
+                }}
+              />
+            ) : (
+              <Suspense fallback={null}>
+                <EchoField active={heroInView} />
+              </Suspense>
+            )}
+          </motion.div>
+        )}
       </div>
 
       <Container className={`relative z-10 ${isStudio ? 'w-full text-left' : ''}`}>
-        <WordsPullUp text="Midjourney Medical" className="label" />
+        <WordsPullUp text="Midjourney Medical" className="label" start={go} delay={0.2} />
 
+        {/* headline — a cinematic blur-up: rises and resolves from a soft blur as
+            it scales to full, so it reads as forming out of the void. */}
         <motion.p
           className={`authored mt-6 ${isStudio ? 'max-w-[15ch]' : 'max-w-[18ch] mx-auto'}`}
           style={{
@@ -154,17 +169,21 @@ export function Hero() {
               : 'clamp(1.75rem, 5.4vw, 4.4rem)',
             color: 'var(--cream)',
           }}
-          initial={reduce ? false : { opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          initial={reduce ? false : { opacity: 0, y: 28, scale: 0.97, filter: 'blur(14px)' }}
+          animate={go ? { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' } : undefined}
+          transition={{ duration: 1.3, delay: 0.55, ease: EASE }}
         >
           {/* verbatim — Midjourney blogpost opening */}
           Something a little weird, a little crazy — but also spectacular, and filled with hope.
         </motion.p>
 
-        <div
+        {/* hairline — draws out from the centre after the headline settles */}
+        <motion.div
           className={`mt-10 h-px w-16 ${isStudio ? '' : 'mx-auto'}`}
-          style={{ background: 'var(--hairline)' }}
+          style={{ background: 'var(--hairline)', transformOrigin: isStudio ? 'left' : 'center' }}
+          initial={reduce ? false : { scaleX: 0, opacity: 0 }}
+          animate={go ? { scaleX: 1, opacity: 1 } : undefined}
+          transition={{ duration: 0.8, delay: 1.05, ease: EASE }}
         />
       </Container>
 
@@ -185,7 +204,7 @@ export function Hero() {
       <motion.div
         className="pointer-events-none absolute bottom-10 left-1/2 z-10 -translate-x-1/2"
         initial={reduce ? false : { opacity: 0 }}
-        animate={{ opacity: 1 }}
+        animate={go ? { opacity: 1 } : undefined}
         transition={{ duration: 1.4, delay: 1.4 }}
       >
         <motion.div
