@@ -37,14 +37,14 @@ export default function App() {
       <div className="void-breath" aria-hidden />
       <Nav />
 
-      {/* the page settles in as the loader lifts away — a subtle push-in
-          crossfade that meets the overlay's blur/scale exit (immersive, simple) */}
+      {/* the page settles in as the loader lifts away — a clean crossfade (no
+          scale, so the hero never repositions on reveal; the hero runs its own
+          intro). */}
       <motion.main
         className="relative z-10"
-        initial={reduce ? false : { opacity: 0, scale: 1.03 }}
-        animate={revealed || reduce ? { opacity: 1, scale: 1 } : undefined}
-        transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
-        style={{ transformOrigin: '50% 0%' }}
+        initial={reduce ? false : { opacity: 0 }}
+        animate={revealed || reduce ? { opacity: 1 } : undefined}
+        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
       >
         <Hero start={revealed || !!reduce} />
         <Suspense fallback={<section id="body" className="min-h-[100dvh]" />}>

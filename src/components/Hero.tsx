@@ -8,7 +8,6 @@ import {
   useTransform,
   type MotionValue,
 } from 'framer-motion'
-import { WordsPullUp } from '../anim/WordsPullUp'
 import { Container } from './Container'
 import { asset } from '../lib/asset'
 
@@ -160,13 +159,11 @@ export function Hero({ start = true }: { start?: boolean }) {
       </div>
 
       <Container className={`relative z-10 ${isStudio ? 'w-full text-left' : ''}`}>
-        <WordsPullUp text="Midjourney Medical" className="label" start={go} delay={0.2} />
-
         {/* headline — animates in WORD BY WORD (rise + fade, staggered) so the
             lines fill into the page instead of jumping in as a block. Verbatim,
             Midjourney blogpost opening. */}
         <p
-          className={`authored mt-6 ${isStudio ? 'max-w-[15ch]' : 'max-w-[18ch] mx-auto'}`}
+          className={`authored ${isStudio ? 'max-w-[15ch]' : 'max-w-[18ch] mx-auto'}`}
           style={{
             fontSize: isStudio
               ? 'clamp(1.6rem, 3.4vw, 3.1rem)'
@@ -180,7 +177,7 @@ export function Hero({ start = true }: { start?: boolean }) {
               <motion.span
                 aria-hidden
                 className="inline-block"
-                initial={reduce ? false : { opacity: 0, y: '0.45em' }}
+                initial={reduce ? false : { opacity: 0, y: 18 }}
                 animate={go ? { opacity: 1, y: 0 } : undefined}
                 transition={{ duration: 0.8, delay: 0.45 + i * 0.045, ease: EASE }}
               >

@@ -51,6 +51,9 @@ body,
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
+  /* always reserve the scrollbar gutter so locking/unlocking body scroll (the
+     loader) never shifts the centered layout sideways on reveal. */
+  scrollbar-gutter: stable;
 }
 
 body {
